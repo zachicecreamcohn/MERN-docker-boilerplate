@@ -1,0 +1,59 @@
+services:
+  db:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - MONGO_URL=mongodb://db:27017/${MONGODB_DATABASE_NAME}
+      - PORT=4000
+      - WATCHPACK_POLLING=true 
+
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+    develop:
+      watch:
+        - action: rebuild
+          path: ./backend
+          target: /usr/src/backend
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+      - WDS_SOCKET_HOST=127.0.0.1
+      - WATCHPACK_POLLING=true 
+    command: npm run start
+    depends_on:
+      - backend
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /usr/src/frontend
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
+
+volumes:
+  mongo-data:
