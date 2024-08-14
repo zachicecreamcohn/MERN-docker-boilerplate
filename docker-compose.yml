@@ -17,7 +17,6 @@ services:
       - MONGO_URL=mongodb://db:27017/${MONGODB_DATABASE_NAME}
       - PORT=4000
       - WATCHPACK_POLLING=true 
-
     ports:
       - "4000:4000"
     depends_on:
@@ -55,5 +54,26 @@ services:
         - action: rebuild
           path: package.json
 
+  qunit:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3030:3030"
+    environment:
+      - WDS_SOCKET_HOST=127.0.0.1
+      - WATCHPACK_POLLING=true 
+    command: npm run test:serve
+    depends_on:
+      - frontend
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /usr/src/frontend
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
 volumes:
   mongo-data:
