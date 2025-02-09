@@ -1,5 +1,5 @@
-# CompKit
-A compensation management toolkit for businesses of all sizes.
+# MERN Boilerplate
+Simple MERN boilerplate with testing
 
 ## Repo structure
 
